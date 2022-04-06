@@ -1,22 +1,52 @@
 import { useState } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 
-function Task({ task, index, state, column, setState }) {
+interface Props {
+  task: {
+    id: string;
+    content: string;
+  };
+  index: number;
+  column: {
+    id: string;
+    title: string;
+    taskIds: string[];
+  };
+  setState: any;
+  state: {
+    tasks: {
+      [key: string]: {
+        id: string;
+        content: string;
+      };
+    };
+    columns: {
+      [key: string]: {
+        id: string;
+        title: string;
+        taskIds: string[];
+      };
+    };
+  };
+}
+
+function Task({ task, index, column, setState, state }: Props) {
   const [text, setText] = useState(task.content);
   const [isEditable, setIsEditable] = useState(false);
-  const [isDeletable, setIsDeletable] = useState(false);
 
   const handleChange = (e) => {
     setText(e.target.value);
   };
 
   const handleDelete = () => {
-    setState((prevState) => {
-      const newState = { ...prevState };
-      newState.columns[column.id].taskIds.splice(index, 1);
-      localStorage.setItem('state', JSON.stringify(newState));
-      return newState;
-    });
+    const newState = { ...state };
+    const columnId = column.id;
+    const taskId = task.id;
+    const TaskIndex = newState.columns[columnId].taskIds.indexOf(taskId);
+    newState.columns[columnId].taskIds.splice(TaskIndex, 1);
+    delete newState.tasks[taskId];
+    setState(newState);
+    localStorage.setItem('state', JSON.stringify(newState));
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,6 +69,7 @@ function Task({ task, index, state, column, setState }) {
           onMouseLeave={() => setTimeout(() => setIsEditable(false), 5000)}
         >
           {!isEditable && text}
+
           {isEditable && (
             <form onSubmit={handleSubmit}>
               <input
@@ -49,6 +80,7 @@ function Task({ task, index, state, column, setState }) {
               />
             </form>
           )}
+
           <button
             className={
               'absolute top-0 right-0 m-3 text-gray-600 transition duration-300 ease-in-out dark:bg-slate-800 dark:text-gray-600'

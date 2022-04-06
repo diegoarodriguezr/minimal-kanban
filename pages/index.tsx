@@ -24,7 +24,6 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     setWindowReady(true);
-    localStorage.removeItem('state');
     setState(JSON.parse(localStorage.getItem('state')) || initialData);
   }, []);
 
